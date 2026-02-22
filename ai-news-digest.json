@@ -1,0 +1,214 @@
+{
+  "name": "AI Automation Daily Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 7,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily 7AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://hnrss.org/frontpage?q=AI+automation+LLM+agent&count=15",
+        "options": {}
+      },
+      "id": "rss-hackernews",
+      "name": "Hacker News — AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [240, 100]
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "id": "rss-techcrunch",
+      "name": "TechCrunch AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [240, 260]
+    },
+    {
+      "parameters": {
+        "url": "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
+        "options": {}
+      },
+      "id": "rss-verge",
+      "name": "The Verge AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [240, 420]
+    },
+    {
+      "parameters": {
+        "url": "https://venturebeat.com/category/ai/feed/",
+        "options": {}
+      },
+      "id": "rss-venturebeat",
+      "name": "VentureBeat AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [240, 580]
+    },
+    {
+      "parameters": {
+        "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCnUYZLuoy1rq1aVMwx4aTzw",
+        "options": {}
+      },
+      "id": "rss-youtube-mattwo",
+      "name": "YouTube — Matt Wolfe",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [240, 740]
+    },
+    {
+      "parameters": {
+        "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCVpankR4HtoAVtYnFDUieYA",
+        "options": {}
+      },
+      "id": "rss-youtube-aiautomation",
+      "name": "YouTube — AI Automation Society",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [240, 900]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "id": "merge-all",
+      "name": "Merge All Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [520, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize all feed items into a unified shape\nconst items = $input.all();\nconst today = new Date();\nconst cutoff = new Date(today.getTime() - 24 * 60 * 60 * 1000); // last 24h\n\nconst keywords = [\n  'AI', 'automation', 'LLM', 'agent', 'GPT', 'Claude', 'Gemini',\n  'workflow', 'n8n', 'Zapier', 'Make', 'OpenAI', 'Anthropic',\n  'business', 'enterprise', 'productivity', 'tool', 'SaaS',\n  'chatbot', 'copilot', 'model', 'launch', 'release'\n];\n\nconst seen = new Set();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  const title = (data.title || data['media:title'] || '').trim();\n  const link = (data.link || data.url || '').trim();\n  const pubDate = data.pubDate || data.published || data.isoDate || data.updated;\n  const description = (data.contentSnippet || data.description || data.summary || '').replace(/<[^>]*>/g, '').trim().slice(0, 180);\n  const source = data.feedTitle || data.channelTitle || 'Unknown';\n\n  if (!title || !link) continue;\n  if (seen.has(link)) continue;\n  seen.add(link);\n\n  // Recency filter\n  if (pubDate) {\n    const pub = new Date(pubDate);\n    if (pub < cutoff) continue;\n  }\n\n  // Relevance score\n  const combined = (title + ' ' + description).toLowerCase();\n  let score = 0;\n  for (const kw of keywords) {\n    if (combined.includes(kw.toLowerCase())) score++;\n  }\n  if (score === 0) continue;\n\n  results.push({\n    json: {\n      title,\n      link,\n      description: description || 'No preview available.',\n      source,\n      pubDate: pubDate ? new Date(pubDate).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent',\n      score\n    }\n  });\n}\n\n// Sort by score descending, cap at top 12\nresults.sort((a, b) => b.json.score - a.json.score);\nreturn results.slice(0, 12);\n"
+      },
+      "id": "filter-score",
+      "name": "Filter & Score Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 500]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "articles",
+        "options": {}
+      },
+      "id": "aggregate",
+      "name": "Aggregate into Array",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1000, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a sleek HTML email digest\nconst articles = $input.first().json.articles || [];\nconst today = new Date().toLocaleDateString('en-US', {\n  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'\n});\n\nif (articles.length === 0) {\n  return [{ json: { subject: `AI Digest — ${today}`, html: '<p>No relevant stories found in the last 24 hours.</p>' } }];\n}\n\nconst bullets = articles.map(a => `\n  <tr>\n    <td style=\"padding: 16px 0; border-bottom: 1px solid #1e1e2e;\">\n      <a href=\"${a.link}\" style=\"\n        font-size: 15px;\n        font-weight: 600;\n        color: #c084fc;\n        text-decoration: none;\n        line-height: 1.4;\n        display: block;\n        margin-bottom: 4px;\n      \">${a.title}</a>\n      <p style=\"margin: 4px 0 6px; font-size: 13px; color: #94a3b8; line-height: 1.5;\">${a.description}</p>\n      <span style=\"\n        font-size: 11px;\n        color: #64748b;\n        background: #1e1e2e;\n        padding: 2px 8px;\n        border-radius: 20px;\n        margin-right: 6px;\n      \">${a.source}</span>\n      <span style=\"font-size: 11px; color: #64748b;\">${a.pubDate}</span>\n    </td>\n  </tr>\n`).join('');\n\nconst html = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>AI Digest</title>\n</head>\n<body style=\"margin:0; padding:0; background-color:#0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\">\n\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#0a0a0f; padding: 32px 0;\">\n    <tr>\n      <td align=\"center\">\n        <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px; width:100%;\">\n\n          <!-- HEADER -->\n          <tr>\n            <td style=\"\n              background: linear-gradient(135deg, #1a0533 0%, #0f172a 60%, #0a0a0f 100%);\n              border-radius: 16px 16px 0 0;\n              padding: 36px 40px 28px;\n              border-bottom: 1px solid #2d1b4e;\n            \">\n              <div style=\"\n                display: inline-block;\n                background: linear-gradient(135deg, #7c3aed, #c084fc);\n                -webkit-background-clip: text;\n                -webkit-text-fill-color: transparent;\n                font-size: 11px;\n                font-weight: 700;\n                letter-spacing: 3px;\n                text-transform: uppercase;\n                margin-bottom: 10px;\n              \">Daily Intelligence Feed</div>\n              <h1 style=\"\n                margin: 0 0 6px;\n                font-size: 26px;\n                font-weight: 800;\n                color: #f1f5f9;\n                letter-spacing: -0.5px;\n              \">AI &amp; Automation Digest</h1>\n              <p style=\"margin:0; font-size:13px; color:#64748b;\">${today}</p>\n              <div style=\"\n                margin-top: 20px;\n                height: 2px;\n                background: linear-gradient(90deg, #7c3aed, #c084fc, transparent);\n                border-radius: 2px;\n              \"></div>\n            </td>\n          </tr>\n\n          <!-- INTRO CHIP -->\n          <tr>\n            <td style=\"background:#0f0f1a; padding: 16px 40px;\">\n              <span style=\"\n                font-size: 12px;\n                color: #a78bfa;\n                background: #1e1033;\n                border: 1px solid #3b1f6e;\n                padding: 4px 12px;\n                border-radius: 20px;\n              \">🤖 ${articles.length} stories curated for you</span>\n            </td>\n          </tr>\n\n          <!-- ARTICLES -->\n          <tr>\n            <td style=\"background:#0f0f1a; padding: 0 40px 24px;\">\n              <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n                ${bullets}\n              </table>\n            </td>\n          </tr>\n\n          <!-- FOOTER -->\n          <tr>\n            <td style=\"\n              background: #08080f;\n              border-radius: 0 0 16px 16px;\n              padding: 24px 40px;\n              border-top: 1px solid #1e1e2e;\n              text-align: center;\n            \">\n              <p style=\"margin:0 0 6px; font-size:11px; color:#334155;\">\n                Powered by n8n &middot; Curated by your AI digest workflow\n              </p>\n              <p style=\"margin:0; font-size:11px; color:#1e293b;\">Sources: Hacker News, TechCrunch, The Verge, VentureBeat, YouTube</p>\n            </td>\n          </tr>\n\n        </table>\n      </td>\n    </tr>\n  </table>\n\n</body>\n</html>\n`;\n\nreturn [{ json: { subject: `AI Digest — ${today}`, html } }];\n"
+      },
+      "id": "build-email",
+      "name": "Build HTML Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 500]
+    },
+    {
+      "parameters": {
+        "fromEmail": "YOUR_SENDING_EMAIL@example.com",
+        "toEmail": "YOUR_INBOX@example.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Digest Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1480, 500],
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_WITH_YOUR_SMTP_CREDENTIAL_ID",
+          "name": "Your SMTP Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 7AM Trigger": {
+      "main": [
+        [
+          { "node": "Hacker News — AI", "type": "main", "index": 0 },
+          { "node": "TechCrunch AI", "type": "main", "index": 0 },
+          { "node": "The Verge AI", "type": "main", "index": 0 },
+          { "node": "VentureBeat AI", "type": "main", "index": 0 },
+          { "node": "YouTube — Matt Wolfe", "type": "main", "index": 0 },
+          { "node": "YouTube — AI Automation Society", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Hacker News — AI": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 0 }]]
+    },
+    "TechCrunch AI": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 1 }]]
+    },
+    "The Verge AI": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 2 }]]
+    },
+    "VentureBeat AI": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 3 }]]
+    },
+    "YouTube — Matt Wolfe": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 4 }]]
+    },
+    "YouTube — AI Automation Society": {
+      "main": [[{ "node": "Merge All Sources", "type": "main", "index": 5 }]]
+    },
+    "Merge All Sources": {
+      "main": [[{ "node": "Filter & Score Items", "type": "main", "index": 0 }]]
+    },
+    "Filter & Score Items": {
+      "main": [[{ "node": "Aggregate into Array", "type": "main", "index": 0 }]]
+    },
+    "Aggregate into Array": {
+      "main": [[{ "node": "Build HTML Email", "type": "main", "index": 0 }]]
+    },
+    "Build HTML Email": {
+      "main": [[{ "node": "Send Digest Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    { "name": "digest" },
+    { "name": "AI" },
+    { "name": "automation" }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-02-22T00:00:00.000Z",
+  "versionId": "1"
+}

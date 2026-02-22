@@ -27,11 +27,28 @@
       width: 100%;
     }
 
-    /* Custom cursor */
     body {
       cursor: none;
+      background-color: var(--cream);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
     }
 
+    /* ─── Hexagram canvas ─── */
+    #bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── Custom cursor ─── */
     #cursor {
       position: fixed;
       top: 0; left: 0;
@@ -41,7 +58,6 @@
       pointer-events: none;
       z-index: 9999;
       transform: translate(-50%, -50%);
-      transition: transform 0.08s ease, opacity 0.3s ease;
       mix-blend-mode: multiply;
     }
 
@@ -54,30 +70,16 @@
       pointer-events: none;
       z-index: 9998;
       transform: translate(-50%, -50%);
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                  width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
       opacity: 0.5;
     }
 
-    body {
-      background-color: var(--cream);
-      color: var(--ink);
-      font-family: 'DM Sans', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-
-    /* Ambient gradient orbs */
+    /* ─── Ambient orbs ─── */
     .orb {
       position: fixed;
       border-radius: 50%;
       filter: blur(80px);
       pointer-events: none;
-      z-index: 0;
+      z-index: 2;
       opacity: 0;
       transition: opacity 2s ease;
     }
@@ -96,10 +98,10 @@
 
     .orb.show { opacity: 1; }
 
-    /* Main layout */
+    /* ─── Main layout ─── */
     .stage {
       position: relative;
-      z-index: 1;
+      z-index: 3;
       width: min(580px, 88vw);
       text-align: center;
       padding: 3.5rem 2rem;
@@ -130,10 +132,10 @@
       flex-shrink: 0;
     }
 
-    .rule.animate .rule-line   { width: 60px; }
+    .rule.animate .rule-line    { width: 60px; }
     .rule.animate .rule-diamond { transform: rotate(45deg) scale(1); }
 
-    /* ─── Eyebrow label ─── */
+    /* ─── Eyebrow ─── */
     .eyebrow {
       font-family: 'DM Sans', sans-serif;
       font-weight: 200;
@@ -147,10 +149,7 @@
       transition: opacity 0.9s ease, transform 0.9s ease;
     }
 
-    .eyebrow.animate {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .eyebrow.animate { opacity: 1; transform: translateY(0); }
 
     /* ─── Main name ─── */
     .name-wrap {
@@ -164,11 +163,9 @@
       font-size: clamp(5.5rem, 22vw, 11rem);
       line-height: 0.88;
       letter-spacing: 0.06em;
-      color: var(--ink);
       display: block;
       transform: translateY(105%);
       transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
-      /* Gold shimmer sweep on entry */
       background: linear-gradient(
         105deg,
         var(--ink) 0%,
@@ -207,7 +204,7 @@
 
     .codename.animate { opacity: 1; }
 
-    /* ─── Center divider ─── */
+    /* ─── Divider ─── */
     .divider {
       display: flex;
       align-items: center;
@@ -220,12 +217,7 @@
 
     .divider.animate { opacity: 1; }
 
-    .div-line {
-      flex: 1;
-      height: 1px;
-      background: var(--rule);
-    }
-
+    .div-line   { flex: 1; height: 1px; background: var(--rule); }
     .div-circle {
       width: 5px; height: 5px;
       border-radius: 50%;
@@ -246,10 +238,7 @@
       transition: opacity 0.9s ease, transform 0.9s ease;
     }
 
-    .discipline.animate {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .discipline.animate { opacity: 1; transform: translateY(0); }
 
     /* ─── Tagline ─── */
     .tagline {
@@ -265,16 +254,10 @@
       transition: opacity 0.9s ease, transform 0.9s ease;
     }
 
-    .tagline.animate {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .tagline.animate { opacity: 1; transform: translateY(0); }
 
     /* ─── Bottom rule ─── */
-    .rule-bottom {
-      margin-top: 2.8rem;
-      margin-bottom: 2rem;
-    }
+    .rule-bottom { margin-top: 2.8rem; margin-bottom: 2rem; }
 
     /* ─── Tags ─── */
     .tags {
@@ -302,17 +285,18 @@
     .tag + .tag::before {
       content: '';
       position: absolute;
-      left: 0;
-      top: 50%;
+      left: 0; top: 50%;
       transform: translateY(-50%);
-      width: 1px;
-      height: 10px;
+      width: 1px; height: 10px;
       background: var(--rule);
     }
 
   </style>
 </head>
 <body>
+
+  <!-- Hexagram background -->
+  <canvas id="bg"></canvas>
 
   <!-- Custom cursor -->
   <div id="cursor"></div>
@@ -368,7 +352,154 @@
   </div>
 
   <script>
-    // ─── Staggered entrance ───────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    //  FRACTAL HEXAGRAM BACKGROUND
+    // ═══════════════════════════════════════════════════════
+
+    const bgCanvas  = document.getElementById('bg');
+    const bgCtx     = bgCanvas.getContext('2d');
+
+    // Two offscreen canvases: one for the bright hexagram,
+    // one to use as a radial-gradient mask
+    const hexOff    = document.createElement('canvas');
+    const hexOffCtx = hexOff.getContext('2d');
+    const maskOff   = document.createElement('canvas');
+    const maskCtx   = maskOff.getContext('2d');
+
+    let BW = 0, BH = 0, hexR = 0;
+
+    // ── Draw two overlapping triangles (= hexagram) recursively
+    function hexLines(c, cx, cy, r, depth) {
+      if (r < 9) return;
+
+      // Triangle pointing up
+      c.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a = (i * 120 - 90) * Math.PI / 180;
+        i === 0
+          ? c.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a))
+          : c.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+      }
+      c.closePath();
+      c.stroke();
+
+      // Triangle pointing down
+      c.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a = (i * 120 + 90) * Math.PI / 180;
+        i === 0
+          ? c.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a))
+          : c.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+      }
+      c.closePath();
+      c.stroke();
+
+      if (depth > 0) {
+        // Six outer points → recurse
+        for (let i = 0; i < 6; i++) {
+          const a = (i * 60) * Math.PI / 180;
+          hexLines(c, cx + r * Math.cos(a), cy + r * Math.sin(a), r / 3, depth - 1);
+        }
+        // Inner centre → recurse (fills the core with smaller geometry)
+        hexLines(c, cx, cy, r / 3, depth - 1);
+      }
+    }
+
+    // ── Pre-render the static hexagram layers onto offscreen canvases
+    function buildHexLayers() {
+      BW = window.innerWidth;
+      BH = window.innerHeight;
+      hexR = Math.min(BW, BH) * 0.48;
+
+      bgCanvas.width = hexOff.width = maskOff.width  = BW;
+      bgCanvas.height = hexOff.height = maskOff.height = BH;
+
+      // Base layer (very faint, drawn every frame via blit)
+      // We'll just redraw it cheaply each frame using bgCtx directly
+      // Bright layer (used for sheen reveal)
+      hexOffCtx.clearRect(0, 0, BW, BH);
+      hexOffCtx.strokeStyle = 'rgba(181, 154, 114, 0.32)';
+      hexOffCtx.lineWidth   = 1.1;
+      hexLines(hexOffCtx, BW / 2, BH / 2, hexR, 3);
+    }
+
+    // ── Pointer tracking (mouse + touch)
+    let targetX = 0, targetY = 0;
+    let smoothX = 0, smoothY = 0;
+
+    function setPointer(x, y) { targetX = x; targetY = y; }
+
+    document.addEventListener('mousemove', e => setPointer(e.clientX, e.clientY));
+    document.addEventListener('touchmove', e => {
+      setPointer(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    document.addEventListener('touchstart', e => {
+      setPointer(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    // Composite canvas — created once, reused every frame
+    const compOff    = document.createElement('canvas');
+    const compOffCtx = compOff.getContext('2d');
+
+    // ── Animation loop
+    function renderBg() {
+      // Smooth follow — lazy easing for silky feel
+      smoothX += (targetX - smoothX) * 0.045;
+      smoothY += (targetY - smoothY) * 0.045;
+
+      bgCtx.clearRect(0, 0, BW, BH);
+
+      // ── 1. Base hexagram (permanent, ghostly)
+      bgCtx.strokeStyle = 'rgba(181, 154, 114, 0.05)';
+      bgCtx.lineWidth   = 0.5;
+      hexLines(bgCtx, BW / 2, BH / 2, hexR, 3);
+
+      // ── 2. Build mask: radial gradient around cursor
+      maskCtx.clearRect(0, 0, BW, BH);
+      const gr = maskCtx.createRadialGradient(
+        smoothX, smoothY, 0,
+        smoothX, smoothY, Math.min(BW, BH) * 0.3
+      );
+      gr.addColorStop(0,    'rgba(255,255,255,1)');
+      gr.addColorStop(0.35, 'rgba(255,255,255,0.6)');
+      gr.addColorStop(0.7,  'rgba(255,255,255,0.1)');
+      gr.addColorStop(1,    'rgba(255,255,255,0)');
+      maskCtx.fillStyle = gr;
+      maskCtx.fillRect(0, 0, BW, BH);
+
+      // ── 3. Stamp bright hex → mask to cursor glow → layer on base
+      compOffCtx.clearRect(0, 0, BW, BH);
+      compOffCtx.drawImage(hexOff, 0, 0);                      // bright hex
+      compOffCtx.globalCompositeOperation = 'destination-in';
+      compOffCtx.drawImage(maskOff, 0, 0);                     // cut to glow area
+      compOffCtx.globalCompositeOperation = 'source-over';
+
+      bgCtx.drawImage(compOff, 0, 0);                          // sheen on top
+
+      requestAnimationFrame(renderBg);
+    }
+
+    window.addEventListener('resize', () => {
+      compOff.width  = window.innerWidth;
+      compOff.height = window.innerHeight;
+      buildHexLayers();
+      smoothX = targetX = BW / 2;
+      smoothY = targetY = BH / 2;
+    });
+
+    // Init
+    compOff.width  = window.innerWidth;
+    compOff.height = window.innerHeight;
+    buildHexLayers();
+    smoothX = targetX = window.innerWidth  / 2;
+    smoothY = targetY = window.innerHeight / 2;
+    renderBg();
+
+
+    // ═══════════════════════════════════════════════════════
+    //  CARD ENTRANCE ANIMATIONS
+    // ═══════════════════════════════════════════════════════
+
     const delay = (fn, ms) => setTimeout(fn, ms);
 
     window.addEventListener('load', () => {
@@ -385,7 +516,11 @@
       delay(() => document.getElementById('tags').classList.add('animate'), 2650);
     });
 
-    // ─── Custom cursor ────────────────────────────────────────
+
+    // ═══════════════════════════════════════════════════════
+    //  CUSTOM CURSOR
+    // ═══════════════════════════════════════════════════════
+
     const cursor     = document.getElementById('cursor');
     const cursorRing = document.getElementById('cursor-ring');
     let mx = 0, my = 0, rx = 0, ry = 0;
@@ -396,29 +531,34 @@
       cursor.style.top  = my + 'px';
     });
 
-    // Ring follows with lag
-    (function animateRing() {
+    (function animateCursor() {
       rx += (mx - rx) * 0.14;
       ry += (my - ry) * 0.14;
       cursorRing.style.left = rx + 'px';
       cursorRing.style.top  = ry + 'px';
-      requestAnimationFrame(animateRing);
+      requestAnimationFrame(animateCursor);
     })();
 
-    // ─── Subtle mouse parallax on stage ──────────────────────
+
+    // ═══════════════════════════════════════════════════════
+    //  3D PARALLAX TILT ON CARD
+    // ═══════════════════════════════════════════════════════
+
     const stage = document.getElementById('stage');
+
     document.addEventListener('mousemove', e => {
       const cx = window.innerWidth  / 2;
       const cy = window.innerHeight / 2;
-      const dx = (e.clientX - cx) / cx;  // -1 to 1
+      const dx = (e.clientX - cx) / cx;
       const dy = (e.clientY - cy) / cy;
       stage.style.transform =
         `perspective(900px) rotateY(${dx * 2.5}deg) rotateX(${-dy * 1.5}deg)`;
     });
 
     document.addEventListener('mouseleave', () => {
-      stage.style.transform = `perspective(900px) rotateY(0deg) rotateX(0deg)`;
+      stage.style.transform = 'perspective(900px) rotateY(0deg) rotateX(0deg)';
     });
+
   </script>
 
 </body>

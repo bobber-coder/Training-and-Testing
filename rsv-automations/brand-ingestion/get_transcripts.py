@@ -46,7 +46,7 @@ def fetch_channel_videos(channel_url: str, limit: int) -> list[dict]:
     return videos
 
 
-def fetch_french_transcript(video_id: str) -> str | None:
+def fetch_french_transcript(video_id: str):
     """
     Fetch the French transcript for a video.
     Returns the plain text on success, None on failure.

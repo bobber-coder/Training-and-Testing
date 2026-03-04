@@ -170,11 +170,15 @@ def generate():
     start_image_url  = (data.get("start_image_url") or "").strip()
     end_image_url    = (data.get("end_image_url")   or "").strip() or None
     prompt           = (data.get("prompt")          or "").strip()
-    duration         = int(data.get("duration", 12))
+    # Duration is a string enum for Kling V3: "5", "10", or "15"
+    duration         = str(data.get("duration", "5"))
+    if duration not in ("5", "10", "15"):
+        duration = "5"
     aspect_ratio     = data.get("aspect_ratio", "16:9")
     negative_prompt  = data.get("negative_prompt", "blur, distort, and low quality")
     cfg_scale        = float(data.get("cfg_scale", 0.5))
     generate_audio   = bool(data.get("generate_audio", True))
+    elements         = data.get("elements") or []   # list of {image_url: ...}
 
     if not start_image_url:
         return jsonify({"error": "start_image_url is required"}), 400
@@ -190,6 +194,8 @@ def generate():
     }
     if end_image_url:
         arguments["end_image_url"] = end_image_url
+    if elements:
+        arguments["elements"] = elements
 
     try:
         result = fal_client.subscribe(
@@ -237,7 +243,7 @@ def generate():
         # Still return success — video is in FAL CDN
         filename = None
 
-    print(f"  ◈  [KLING V3] {aspect_ratio} · {duration}s · audio={generate_audio}")
+    print(f"  ◈  [KLING V3] {aspect_ratio} · {duration}s · audio={generate_audio} · elements={len(elements)}")
 
     return jsonify({
         "video_url":  f"/outputs/{filename}" if filename else video_url,

@@ -6,7 +6,7 @@
 // ── State ──────────────────────────────────────────────────
 const S = {
   aspectRatio:     '16:9',
-  duration:        12,
+  duration:        '5',
   generateAudio:   true,
   cfgScale:        0.5,
 
@@ -15,6 +15,10 @@ const S = {
 
   endImageFile:    null,
   endImageFalUrl:  null,
+
+  // Reference elements (up to 4)
+  elementFiles:    [null, null, null, null],
+  elementFalUrls:  [null, null, null, null],
 
   generating:      false,
 
@@ -56,7 +60,14 @@ function clearPrompt() {
 // ── Aspect Ratio ───────────────────────────────────────────
 function setAspect(ratio, btn) {
   S.aspectRatio = ratio;
-  document.querySelectorAll('.aspect-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('[data-ratio]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Duration ───────────────────────────────────────────────
+function setDuration(val, btn) {
+  S.duration = val;
+  document.querySelectorAll('[data-dur]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
 
@@ -136,6 +147,41 @@ function clearEndImage() {
   idle.style.display = 'flex';
   thumb.src = '';
   document.getElementById('clearEndBtn').style.display = 'none';
+}
+
+// ── Reference Elements ─────────────────────────────────────
+function triggerElementUpload(idx) {
+  document.getElementById('elemInput' + idx).click();
+}
+
+function onElementSelect(e, idx) {
+  const file = e.target.files[0];
+  if (!file) return;
+  S.elementFiles[idx]   = file;
+  S.elementFalUrls[idx] = null;
+  e.target.value = '';
+  showElementPreview(idx, file);
+}
+
+function showElementPreview(idx, file) {
+  const idle    = document.getElementById('elemIdle' + idx);
+  const preview = document.getElementById('elemPreview' + idx);
+  const thumb   = document.getElementById('elemThumb' + idx);
+  idle.style.display    = 'none';
+  preview.style.display = 'flex';
+  thumb.src = URL.createObjectURL(file);
+}
+
+function clearElement(idx) {
+  S.elementFiles[idx]   = null;
+  S.elementFalUrls[idx] = null;
+  const idle    = document.getElementById('elemIdle' + idx);
+  const preview = document.getElementById('elemPreview' + idx);
+  const thumb   = document.getElementById('elemThumb' + idx);
+  preview.style.display = 'none';
+  idle.style.display    = 'flex';
+  thumb.src = '';
+  document.getElementById('elemInput' + idx).value = '';
 }
 
 function formatBytes(bytes) {
@@ -330,7 +376,7 @@ async function generate() {
   btn.disabled = true;
   label.textContent = 'Rendering…';
 
-  const duration    = parseInt(document.getElementById('duration').value) || 12;
+  const duration    = S.duration;
   const negPrompt   = document.getElementById('negativePrompt').value.trim()
                       || 'blur, distort, and low quality';
   const meta        = `${S.aspectRatio} · ${duration}s`;
@@ -372,7 +418,20 @@ async function generate() {
       S.endImageFalUrl = await uploadToFal(S.endImageFile);
     }
 
+    // Upload reference elements if provided
+    for (let i = 0; i < 4; i++) {
+      if (S.elementFiles[i] && !S.elementFalUrls[i]) {
+        showStatus('loading', `Uploading Element ${i+1} to FAL…`, true);
+        S.elementFalUrls[i] = await uploadToFal(S.elementFiles[i]);
+      }
+    }
+
     showStatus('loading', 'Rendering your scene — this may take a minute…', true);
+
+    // Build elements array (only slots with images)
+    const elements = S.elementFalUrls
+      .map((url, i) => url ? { image_url: url } : null)
+      .filter(Boolean);
 
     const payload = {
       start_image_url: S.startImageFalUrl,
@@ -383,6 +442,7 @@ async function generate() {
       negative_prompt: negPrompt,
       cfg_scale:       S.cfgScale,
       generate_audio:  S.generateAudio,
+      elements:        elements.length > 0 ? elements : undefined,
     };
 
     const resp = await fetch('/generate', {

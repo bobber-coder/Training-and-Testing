@@ -104,6 +104,65 @@
         <button id="clearEndBtn" class="ghost-btn" style="display:none;align-self:flex-start" onclick="clearEndImage()">✕ Remove end frame</button>
       </div>
 
+      <!-- Reference Elements (Kling V3) -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">
+          Reference Elements
+          <span class="label-tag">optional · up to 4</span>
+        </label>
+        <div class="hint" style="margin-bottom:8px">Reference as <code style="font-size:11px;background:var(--gold-6);padding:1px 4px;border-radius:3px">@Element1</code> <code style="font-size:11px;background:var(--gold-6);padding:1px 4px;border-radius:3px">@Element2</code>… in your prompt</div>
+        <div class="elements-grid">
+          <div class="element-slot" id="elemSlot0" onclick="triggerElementUpload(0)">
+            <input type="file" id="elemInput0" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none" onchange="onElementSelect(event,0)">
+            <div id="elemIdle0" class="elem-idle">
+              <span class="elem-plus">+</span>
+              <span class="elem-label">Element 1</span>
+            </div>
+            <div id="elemPreview0" class="elem-preview" style="display:none">
+              <img id="elemThumb0" class="elem-thumb" src="" alt="">
+              <button class="elem-remove" onclick="event.stopPropagation(); clearElement(0)">✕</button>
+              <span class="elem-name">@Element1</span>
+            </div>
+          </div>
+          <div class="element-slot" id="elemSlot1" onclick="triggerElementUpload(1)">
+            <input type="file" id="elemInput1" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none" onchange="onElementSelect(event,1)">
+            <div id="elemIdle1" class="elem-idle">
+              <span class="elem-plus">+</span>
+              <span class="elem-label">Element 2</span>
+            </div>
+            <div id="elemPreview1" class="elem-preview" style="display:none">
+              <img id="elemThumb1" class="elem-thumb" src="" alt="">
+              <button class="elem-remove" onclick="event.stopPropagation(); clearElement(1)">✕</button>
+              <span class="elem-name">@Element2</span>
+            </div>
+          </div>
+          <div class="element-slot" id="elemSlot2" onclick="triggerElementUpload(2)">
+            <input type="file" id="elemInput2" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none" onchange="onElementSelect(event,2)">
+            <div id="elemIdle2" class="elem-idle">
+              <span class="elem-plus">+</span>
+              <span class="elem-label">Element 3</span>
+            </div>
+            <div id="elemPreview2" class="elem-preview" style="display:none">
+              <img id="elemThumb2" class="elem-thumb" src="" alt="">
+              <button class="elem-remove" onclick="event.stopPropagation(); clearElement(2)">✕</button>
+              <span class="elem-name">@Element3</span>
+            </div>
+          </div>
+          <div class="element-slot" id="elemSlot3" onclick="triggerElementUpload(3)">
+            <input type="file" id="elemInput3" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" style="display:none" onchange="onElementSelect(event,3)">
+            <div id="elemIdle3" class="elem-idle">
+              <span class="elem-plus">+</span>
+              <span class="elem-label">Element 4</span>
+            </div>
+            <div id="elemPreview3" class="elem-preview" style="display:none">
+              <img id="elemThumb3" class="elem-thumb" src="" alt="">
+              <button class="elem-remove" onclick="event.stopPropagation(); clearElement(3)">✕</button>
+              <span class="elem-name">@Element4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="rule"></div>
 
       <!-- Aspect Ratio -->
@@ -128,10 +187,16 @@
       <!-- Duration -->
       <div class="ctrl-group">
         <label class="ctrl-label">Duration</label>
-        <div class="duration-row">
-          <input type="number" id="duration" class="duration-input"
-            value="12" min="5" max="10" step="1">
-          <span class="duration-unit">seconds</span>
+        <div class="aspect-grid">
+          <button class="aspect-btn active" data-dur="5" onclick="setDuration('5', this)">
+            <span>5s</span>
+          </button>
+          <button class="aspect-btn" data-dur="10" onclick="setDuration('10', this)">
+            <span>10s</span>
+          </button>
+          <button class="aspect-btn" data-dur="15" onclick="setDuration('15', this)">
+            <span>15s</span>
+          </button>
         </div>
       </div>
 

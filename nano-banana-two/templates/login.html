@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOKSHA AI — Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      padding: 44px 48px;
+      width: 380px;
+      box-shadow: 0 8px 48px rgba(176,137,40,0.10);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+    .login-brand {
+      font-family: var(--font-brand);
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      background: var(--gold-foil);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+      line-height: 1;
+    }
+    .login-sub {
+      font-size: 12px;
+      color: var(--text-3);
+      letter-spacing: 0.05em;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+    .login-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      color: var(--text-1);
+      text-align: center;
+      letter-spacing: 0.15em;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .login-input::placeholder {
+      color: var(--text-4);
+      letter-spacing: 0.03em;
+      font-size: 13px;
+    }
+    .login-input:focus {
+      outline: none;
+      border-color: var(--gold-3);
+      box-shadow: 0 0 0 3px rgba(207,168,64,0.10);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--gold-btn);
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      box-shadow: var(--gold-glow);
+      transition: opacity 0.15s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.45s;
+    }
+    .login-btn:hover::before { transform: translateX(100%); }
+    .login-btn:hover { box-shadow: 0 8px 32px rgba(176,137,40,0.3); }
+    .login-error {
+      font-size: 12px;
+      color: #a03030;
+      text-align: center;
+      background: #fdf2f2;
+      border: 1px solid rgba(180,80,80,0.15);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+    }
+    .login-hint {
+      font-size: 11px;
+      color: var(--text-4);
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+
+    <div>
+      <div class="login-brand">MOKSHA AI</div>
+      <div class="login-sub">Nano Banana 2 Studio</div>
+    </div>
+
+    <form class="login-form" method="POST" action="/login">
+      <input
+        type="password"
+        name="pin"
+        class="login-input"
+        placeholder="Enter access PIN"
+        autofocus
+        autocomplete="off"
+      >
+      {% if error %}
+      <div class="login-error">{{ error }}</div>
+      {% endif %}
+      <button type="submit" class="login-btn">Enter Studio →</button>
+    </form>
+
+    <div class="login-hint">Private beta · MOKSHA AI team only</div>
+
+  </div>
+</body>
+</html>

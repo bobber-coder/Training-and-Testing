@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOKSHA AI — Nano Banana 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- API Key Banner -->
+  <div id="apiBanner" class="api-banner" style="display:none">
+    ⚠ &nbsp;<strong>GEMINI_API_KEY</strong> not found — add it to your <code>.env</code> file and restart the server.
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <span class="brand-name">MOKSHA AI</span>
+      <span class="brand-sep">·</span>
+      <span class="brand-sub">Nano Banana 2 Studio</span>
+    </div>
+    <div class="header-meta">
+      <span id="modelTag" class="model-tag"></span>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <div class="workspace">
+
+    <!-- ── SIDEBAR ─────────────────────────────────── -->
+    <aside class="sidebar">
+
+      <!-- Prompt -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Prompt</label>
+        <textarea id="prompt" class="prompt-input"
+          placeholder="Describe the image you want to create…" rows="5"></textarea>
+        <div class="prompt-footer">
+          <button class="ghost-btn" onclick="clearPrompt()">Clear</button>
+          <span class="hint">⌘ ↵ to generate</span>
+        </div>
+      </div>
+
+      <!-- Reference Images (multi) -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">
+          Reference Images
+          <span class="label-tag">optional · up to 8</span>
+        </label>
+        <div id="dropZone" class="drop-zone">
+          <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+          <div id="dropContent" class="drop-content">
+            <div class="drop-arrow">↑</div>
+            <div class="drop-text">
+              Drop images or
+              <button class="link-btn" onclick="document.getElementById('fileInput').click()">browse</button>
+            </div>
+            <div class="drop-sub">PNG · JPG · WebP · up to 8 images</div>
+          </div>
+        </div>
+        <!-- Thumbnail strip appears here -->
+        <div id="refThumbs" class="ref-thumbs" style="display:none"></div>
+        <button id="clearRefBtn" class="clear-ref-btn" style="display:none" onclick="clearRef()">
+          ✕ Clear all reference images
+        </button>
+      </div>
+
+      <div class="rule"></div>
+
+      <!-- Aspect Ratio -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Aspect Ratio</label>
+        <div class="aspect-grid" id="aspectGrid">
+
+          <button class="aspect-btn active" data-ratio="auto" onclick="setAspect('auto', this)">
+            <div class="asp-box" style="width:24px;height:24px;border-radius:4px"></div>
+            <span>Auto</span>
+          </button>
+
+          <button class="aspect-btn" data-ratio="1:1" onclick="setAspect('1:1', this)">
+            <div class="asp-box" style="width:24px;height:24px"></div>
+            <span>1:1</span>
+          </button>
+
+          <button class="aspect-btn" data-ratio="16:9" onclick="setAspect('16:9', this)">
+            <div class="asp-box" style="width:36px;height:20px"></div>
+            <span>16:9</span>
+          </button>
+
+          <button class="aspect-btn" data-ratio="9:16" onclick="setAspect('9:16', this)">
+            <div class="asp-box" style="width:20px;height:36px"></div>
+            <span>9:16</span>
+          </button>
+
+          <button class="aspect-btn" data-ratio="4:3" onclick="setAspect('4:3', this)">
+            <div class="asp-box" style="width:32px;height:24px"></div>
+            <span>4:3</span>
+          </button>
+
+          <button class="aspect-btn" data-ratio="3:4" onclick="setAspect('3:4', this)">
+            <div class="asp-box" style="width:24px;height:32px"></div>
+            <span>3:4</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Resolution -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Resolution</label>
+        <div class="pill-row" id="resGroup">
+          <button class="pill" onclick="setPill('res','0.5K',this)">0.5K</button>
+          <button class="pill active" onclick="setPill('res','1K',this)">1K</button>
+          <button class="pill" onclick="setPill('res','2K',this)">2K</button>
+          <button class="pill" onclick="setPill('res','4K',this)">4K</button>
+        </div>
+      </div>
+
+      <!-- Number of Images -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Number of Images</label>
+        <div class="stepper">
+          <button class="step-btn" onclick="adjustImages(-1)">−</button>
+          <span id="imgCount" class="step-val">1</span>
+          <button class="step-btn" onclick="adjustImages(1)">+</button>
+        </div>
+      </div>
+
+      <!-- Seed -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Seed</label>
+        <div class="seed-row">
+          <input type="number" id="seed" class="seed-input" placeholder="random">
+          <button class="dice-btn" onclick="randomSeed()" title="Randomise">⚄</button>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <!-- Output Format -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Output Format</label>
+        <div class="pill-row" id="fmtGroup">
+          <button class="pill active" onclick="setPill('fmt','png',this)">PNG</button>
+          <button class="pill" onclick="setPill('fmt','jpeg',this)">JPEG</button>
+          <button class="pill" onclick="setPill('fmt','webp',this)">WebP</button>
+        </div>
+      </div>
+
+      <!-- Web Search -->
+      <div class="ctrl-group">
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <div class="toggle-label">Enable Web Search</div>
+            <div class="toggle-desc">Ground prompts with live data</div>
+          </div>
+          <button id="searchToggle" class="toggle" onclick="toggleSearch()" aria-label="Toggle web search"></button>
+        </div>
+      </div>
+
+      <!-- Model -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Model</label>
+        <div class="pill-row" id="modelGroup">
+          <button class="pill active" onclick="setPill('model','nb2',this)">Nano Banana 2</button>
+          <button class="pill" onclick="setPill('model','pro',this)">Nano Banana Pro</button>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <button id="generateBtn" class="generate-btn" onclick="generate()">
+        <span id="generateLabel">Generate</span>
+        <span class="generate-icon">→</span>
+      </button>
+
+    </aside>
+
+    <!-- ── GALLERY PANEL ──────────────────────────── -->
+    <main class="gallery-panel">
+
+      <!-- Tabs -->
+      <div class="panel-tabs">
+        <button class="panel-tab active" id="tabGenerate" onclick="switchTab('generate')">Generate</button>
+        <button class="panel-tab" id="tabLibrary" onclick="switchTab('library')">
+          Library <span id="libCount" class="lib-count" style="display:none"></span>
+        </button>
+      </div>
+
+      <!-- Generate view -->
+      <div id="generateView">
+        <div id="statusBar" class="status-bar" style="display:none"></div>
+        <div id="gallery" class="gallery">
+          <div class="empty-state">
+            <div class="empty-glyph">◈</div>
+            <div class="empty-title">Your images will appear here</div>
+            <div class="empty-sub">Enter a prompt and press Generate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Library view -->
+      <div id="libraryView" style="display:none">
+        <div id="libraryGrid" class="library-grid"></div>
+      </div>
+
+    </main>
+
+  </div><!-- /workspace -->
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+    <button class="lb-nav lb-nav-prev" id="lbPrev" style="display:none"
+            onclick="event.stopPropagation(); lbNav(-1)">‹</button>
+    <div class="lightbox-inner">
+      <img id="lightboxImg" src="" alt="Generated image">
+      <div class="lightbox-bar">
+        <div class="lightbox-bar-left">
+          <span id="lightboxMeta" class="lightbox-meta"></span>
+          <span id="lbPos" class="lightbox-pos"></span>
+        </div>
+        <div class="lightbox-actions">
+          <button id="lightboxDl" class="lb-btn" onclick="event.stopPropagation()">↓ Download</button>
+          <button class="lb-btn lb-close" onclick="closeLightbox(event)">✕ Close</button>
+        </div>
+      </div>
+    </div>
+    <button class="lb-nav lb-nav-next" id="lbNext" style="display:none"
+            onclick="event.stopPropagation(); lbNav(1)">›</button>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

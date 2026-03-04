@@ -67,7 +67,7 @@ function setAspect(ratio, btn) {
 // ── Duration ───────────────────────────────────────────────
 function setDuration(val, btn) {
   S.duration = val;
-  document.querySelectorAll('[data-dur]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
 

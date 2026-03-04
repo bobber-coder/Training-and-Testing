@@ -434,44 +434,37 @@ body::after {
 }
 .aspect-btn.active .asp-box { opacity: 1; }
 
-/* Duration toggle reuses aspect-btn but without the graphic */
-[data-dur].aspect-btn {
-  min-height: 42px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font-brand);
-  justify-content: center;
-}
-
-/* ── Duration ── */
-.duration-row {
+/* ── Duration strip (2 s – 15 s) ── */
+.dur-strip {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.duration-input {
-  width: 72px;
+.dur-btn {
+  flex: 0 0 calc((100% - 6px * 6) / 7);
+  padding: 7px 4px;
   background: var(--surface-2);
   border: 1.5px solid var(--border-mid);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
+  cursor: pointer;
   font-family: var(--font-brand);
-  font-size: 20px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-1);
+  color: var(--text-2);
   text-align: center;
-  transition: border-color 0.15s;
-  -moz-appearance: textfield;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
-.duration-input::-webkit-inner-spin-button,
-.duration-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-.duration-input:focus { outline: none; border-color: var(--gold-3); }
-
-.duration-unit {
-  font-size: 11.5px;
-  color: var(--text-3);
-  font-weight: 500;
+.dur-btn:hover {
+  border-color: var(--gold-3);
+  background: var(--gold-6);
+}
+.dur-btn.active {
+  border-color: var(--gold-2);
+  background: var(--gold-6);
+  color: var(--gold-1);
+  box-shadow: inset 0 0 0 1px rgba(176,137,40,0.18), 0 2px 8px rgba(176,137,40,0.1);
 }
 
 /* ── Reference Elements ── */

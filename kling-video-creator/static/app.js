@@ -16,9 +16,8 @@ const S = {
   endImageFile:    null,
   endImageFalUrl:  null,
 
-  // Reference elements (up to 4)
-  elementFiles:    [null, null, null, null],
-  elementFalUrls:  [null, null, null, null],
+  // Reference elements: each { frontalFile, frontalFalUrl, refFiles:[3], refFalUrls:[3] }
+  refElements:     [],
 
   generating:      false,
 
@@ -150,38 +149,106 @@ function clearEndImage() {
 }
 
 // ── Reference Elements ─────────────────────────────────────
-function triggerElementUpload(idx) {
-  document.getElementById('elemInput' + idx).click();
+function addRefElement() {
+  if (S.refElements.length >= 3) return;
+  S.refElements.push({
+    frontalFile: null, frontalFalUrl: null,
+    refFiles: [null, null, null], refFalUrls: [null, null, null],
+  });
+  renderRefElements();
 }
 
-function onElementSelect(e, idx) {
+function removeRefElement(idx) {
+  S.refElements.splice(idx, 1);
+  renderRefElements();
+}
+
+function renderRefElements() {
+  const list   = document.getElementById('refElementsList');
+  const addBtn = document.getElementById('addRefElemBtn');
+  if (!list) return;
+
+  list.innerHTML = S.refElements.map((elem, i) => `
+    <div class="ref-elem-card">
+      <div class="ref-elem-hdr">
+        <span class="ref-elem-title">Element ${i + 1}</span>
+        <button class="ghost-btn" onclick="removeRefElement(${i})">✕ Remove</button>
+      </div>
+      <div class="ctrl-subgroup">
+        <div class="ctrl-sublabel">Frontal Image</div>
+        <div class="upload-zone compact" onclick="triggerRefFrontal(${i})">
+          <input type="file" id="refFrontalInput_${i}"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+            style="display:none" onchange="onRefFrontalSelect(event,${i})">
+          <div class="upload-idle"${elem.frontalFile ? ' style="display:none"' : ''}>
+            <div class="upload-icon" style="font-size:16px">⬡</div>
+            <div class="upload-text" style="font-size:11px">Drop or
+              <button class="link-btn" onclick="event.stopPropagation();triggerRefFrontal(${i})">browse</button>
+            </div>
+          </div>
+          <div class="upload-preview-wrap${elem.frontalFile ? ' visible' : ''}">
+            <img class="upload-thumb" src="${elem.frontalFile ? URL.createObjectURL(elem.frontalFile) : ''}" alt="">
+            <div class="upload-info">
+              <div class="upload-fname">${elem.frontalFile ? elem.frontalFile.name : ''}</div>
+              <div class="upload-fsize">${elem.frontalFile ? formatBytes(elem.frontalFile.size) : ''}</div>
+            </div>
+            <button class="upload-replace" onclick="event.stopPropagation();triggerRefFrontal(${i})">Replace</button>
+          </div>
+        </div>
+      </div>
+      <div class="ctrl-subgroup">
+        <div class="ctrl-sublabel">Reference Images <span style="font-weight:400;opacity:.5">(up to 3)</span></div>
+        <div class="ref-images-row">
+          ${[0, 1, 2].map(j => `
+            <div class="ref-img-slot" onclick="triggerRefImage(${i},${j})">
+              <input type="file" id="refImgInput_${i}_${j}"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                style="display:none" onchange="onRefImageSelect(event,${i},${j})">
+              ${elem.refFiles[j]
+                ? `<img src="${URL.createObjectURL(elem.refFiles[j])}" alt="">
+                   <button class="slot-remove" onclick="event.stopPropagation();clearRefImage(${i},${j})">✕</button>`
+                : '<span class="slot-plus">+</span>'}
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+
+  if (addBtn) {
+    addBtn.disabled    = S.refElements.length >= 3;
+    addBtn.textContent = S.refElements.length >= 3 ? '+ Add Element (max 3)' : '+ Add Element';
+  }
+}
+
+function triggerRefFrontal(idx) {
+  document.getElementById('refFrontalInput_' + idx).click();
+}
+
+function onRefFrontalSelect(e, idx) {
   const file = e.target.files[0];
   if (!file) return;
-  S.elementFiles[idx]   = file;
-  S.elementFalUrls[idx] = null;
+  S.refElements[idx].frontalFile   = file;
+  S.refElements[idx].frontalFalUrl = null;
   e.target.value = '';
-  showElementPreview(idx, file);
+  renderRefElements();
 }
 
-function showElementPreview(idx, file) {
-  const idle    = document.getElementById('elemIdle' + idx);
-  const preview = document.getElementById('elemPreview' + idx);
-  const thumb   = document.getElementById('elemThumb' + idx);
-  idle.style.display    = 'none';
-  preview.style.display = 'flex';
-  thumb.src = URL.createObjectURL(file);
+function triggerRefImage(elemIdx, imgIdx) {
+  document.getElementById('refImgInput_' + elemIdx + '_' + imgIdx).click();
 }
 
-function clearElement(idx) {
-  S.elementFiles[idx]   = null;
-  S.elementFalUrls[idx] = null;
-  const idle    = document.getElementById('elemIdle' + idx);
-  const preview = document.getElementById('elemPreview' + idx);
-  const thumb   = document.getElementById('elemThumb' + idx);
-  preview.style.display = 'none';
-  idle.style.display    = 'flex';
-  thumb.src = '';
-  document.getElementById('elemInput' + idx).value = '';
+function onRefImageSelect(e, elemIdx, imgIdx) {
+  const file = e.target.files[0];
+  if (!file) return;
+  S.refElements[elemIdx].refFiles[imgIdx]   = file;
+  S.refElements[elemIdx].refFalUrls[imgIdx] = null;
+  e.target.value = '';
+  renderRefElements();
+}
+
+function clearRefImage(elemIdx, imgIdx) {
+  S.refElements[elemIdx].refFiles[imgIdx]   = null;
+  S.refElements[elemIdx].refFalUrls[imgIdx] = null;
+  renderRefElements();
 }
 
 function formatBytes(bytes) {
@@ -418,20 +485,30 @@ async function generate() {
       S.endImageFalUrl = await uploadToFal(S.endImageFile);
     }
 
-    // Upload reference elements if provided
-    for (let i = 0; i < 4; i++) {
-      if (S.elementFiles[i] && !S.elementFalUrls[i]) {
-        showStatus('loading', `Uploading Element ${i+1} to FAL…`, true);
-        S.elementFalUrls[i] = await uploadToFal(S.elementFiles[i]);
+    // Upload reference element images
+    for (let i = 0; i < S.refElements.length; i++) {
+      const elem = S.refElements[i];
+      if (elem.frontalFile && !elem.frontalFalUrl) {
+        showStatus('loading', `Uploading Element ${i+1} frontal image…`, true);
+        elem.frontalFalUrl = await uploadToFal(elem.frontalFile);
+      }
+      for (let j = 0; j < 3; j++) {
+        if (elem.refFiles[j] && !elem.refFalUrls[j]) {
+          showStatus('loading', `Uploading Element ${i+1} reference ${j+1}…`, true);
+          elem.refFalUrls[j] = await uploadToFal(elem.refFiles[j]);
+        }
       }
     }
 
     showStatus('loading', 'Rendering your scene — this may take a minute…', true);
 
-    // Build elements array (only slots with images)
-    const elements = S.elementFalUrls
-      .map((url, i) => url ? { image_url: url } : null)
-      .filter(Boolean);
+    // Build elements array (only elements with a frontal image)
+    const elements = S.refElements
+      .filter(e => e.frontalFalUrl)
+      .map(e => ({
+        image_url: e.frontalFalUrl,
+        reference_image_urls: e.refFalUrls.filter(Boolean),
+      }));
 
     const payload = {
       start_image_url: S.startImageFalUrl,

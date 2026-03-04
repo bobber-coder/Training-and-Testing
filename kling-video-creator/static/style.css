@@ -468,72 +468,119 @@ body::after {
 }
 
 /* ── Reference Elements ── */
-.elements-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.element-slot {
-  position: relative;
-  aspect-ratio: 1;
+.add-elem-btn {
+  width: 100%;
+  padding: 9px;
+  background: var(--surface-2);
   border: 1.5px dashed var(--border-mid);
   border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  text-align: center;
+  transition: all 0.15s;
+}
+.add-elem-btn:hover {
+  border-color: var(--gold-3);
+  background: var(--gold-6);
+  color: var(--gold-1);
+}
+.add-elem-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ref-elem-card {
+  border: 1.5px solid var(--border-mid);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ref-elem-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ref-elem-title {
+  font-family: var(--font-brand);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--gold-2);
+}
+
+.ctrl-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ctrl-sublabel {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Compact upload zone for frontal image */
+.upload-zone.compact .upload-idle { padding: 12px 10px; }
+.upload-zone.compact .upload-icon { font-size: 16px; }
+.upload-zone.compact .upload-text { font-size: 11px; }
+
+/* Reference image slots */
+.ref-images-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.ref-img-slot {
+  aspect-ratio: 1;
+  border: 1.5px dashed var(--border-mid);
+  border-radius: var(--radius-sm);
   background: var(--surface-2);
   cursor: pointer;
-  overflow: hidden;
-  transition: border-color 0.15s, background 0.15s;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.15s, background 0.15s;
 }
-.element-slot:hover {
+.ref-img-slot:hover {
   border-color: var(--gold-3);
   background: var(--gold-6);
 }
-
-.elem-idle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  pointer-events: none;
-}
-.elem-plus {
-  font-size: 22px;
+.ref-img-slot .slot-plus {
+  font-size: 18px;
   color: var(--text-4);
   line-height: 1;
+  pointer-events: none;
 }
-.elem-label {
-  font-size: 10px;
-  color: var(--text-3);
-  font-weight: 500;
-}
-
-.elem-preview {
-  position: absolute;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.elem-thumb {
+.ref-img-slot img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.elem-remove {
+.slot-remove {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: none;
   background: rgba(0,0,0,0.55);
   color: #fff;
-  font-size: 10px;
+  font-size: 9px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -541,20 +588,18 @@ body::after {
   line-height: 1;
   transition: background 0.15s;
 }
-.elem-remove:hover { background: rgba(0,0,0,0.8); }
-.elem-name {
-  position: absolute;
+.slot-remove:hover { background: rgba(0,0,0,0.8); }
+
+/* ── Sidebar sticky render footer ── */
+.sidebar-render-footer {
+  position: sticky;
   bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0,0,0,0.5);
-  color: #fff;
-  font-size: 9px;
-  font-weight: 600;
-  text-align: center;
-  padding: 3px 4px;
-  letter-spacing: 0.02em;
+  z-index: 10;
+  padding: 14px 0 8px;
+  margin-top: 4px;
+  background: linear-gradient(to top, rgba(255,255,255,0.97) 65%, transparent 100%);
 }
+.sidebar-render-footer .generate-btn { margin-top: 0; }
 
 /* ── Toggle ── */
 .toggle-row {

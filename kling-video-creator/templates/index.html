@@ -127,22 +127,18 @@
 
       <!-- Duration -->
       <div class="ctrl-group">
-        <label class="ctrl-label">Duration</label>
-        <div class="dur-strip">
-          <button class="dur-btn" data-dur="2"  onclick="setDuration('2', this)">2s</button>
-          <button class="dur-btn" data-dur="3"  onclick="setDuration('3', this)">3s</button>
-          <button class="dur-btn" data-dur="4"  onclick="setDuration('4', this)">4s</button>
-          <button class="dur-btn active" data-dur="5"  onclick="setDuration('5', this)">5s</button>
-          <button class="dur-btn" data-dur="6"  onclick="setDuration('6', this)">6s</button>
-          <button class="dur-btn" data-dur="7"  onclick="setDuration('7', this)">7s</button>
-          <button class="dur-btn" data-dur="8"  onclick="setDuration('8', this)">8s</button>
-          <button class="dur-btn" data-dur="9"  onclick="setDuration('9', this)">9s</button>
-          <button class="dur-btn" data-dur="10" onclick="setDuration('10', this)">10s</button>
-          <button class="dur-btn" data-dur="11" onclick="setDuration('11', this)">11s</button>
-          <button class="dur-btn" data-dur="12" onclick="setDuration('12', this)">12s</button>
-          <button class="dur-btn" data-dur="13" onclick="setDuration('13', this)">13s</button>
-          <button class="dur-btn" data-dur="14" onclick="setDuration('14', this)">14s</button>
-          <button class="dur-btn" data-dur="15" onclick="setDuration('15', this)">15s</button>
+        <label class="ctrl-label">
+          Duration
+          <span class="label-tag" id="durVal">5s</span>
+        </label>
+        <div class="slider-row">
+          <input type="range" id="durSlider" class="slider"
+            min="3" max="15" step="1" value="5"
+            oninput="updateDuration(this.value)">
+        </div>
+        <div class="slider-ends">
+          <span>3s</span>
+          <span>15s</span>
         </div>
       </div>
 

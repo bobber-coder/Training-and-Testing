@@ -64,10 +64,9 @@ function setAspect(ratio, btn) {
 }
 
 // ── Duration ───────────────────────────────────────────────
-function setDuration(val, btn) {
+function updateDuration(val) {
   S.duration = val;
-  document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  document.getElementById('durVal').textContent = val + 's';
 }
 
 // ── Audio toggle ───────────────────────────────────────────

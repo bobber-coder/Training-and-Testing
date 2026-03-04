@@ -610,7 +610,7 @@ body::after {
 
 /* ── Advanced — smooth accordion ── */
 .advanced-details {
-  overflow: hidden;
+  display: block;
 }
 
 .advanced-summary {

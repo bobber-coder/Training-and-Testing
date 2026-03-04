@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kling Video Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- API Key Banner -->
+  <div id="apiBanner" class="api-banner" style="display:none">
+    ⚠ &nbsp;<strong>FAL_KEY</strong> not found — add it to your <code>.env</code> file and restart the server.
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <span class="brand-name">Kling Video Creator</span>
+      <span class="brand-sep">·</span>
+      <span class="brand-sub">AI Video Studio</span>
+    </div>
+    <div class="header-meta">
+      <span id="modelTag" class="model-tag"></span>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <div class="workspace">
+
+    <!-- ── SIDEBAR ─────────────────────────────────── -->
+    <aside class="sidebar">
+
+      <!-- Prompt -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Prompt</label>
+        <textarea id="prompt" class="prompt-input"
+          placeholder="Describe the motion, mood, and action of your video…" rows="5"></textarea>
+        <div class="prompt-footer">
+          <button class="ghost-btn" onclick="clearPrompt()">Clear</button>
+          <span class="hint">⌘ ↵ to generate</span>
+        </div>
+      </div>
+
+      <!-- Start Image -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">
+          Start Frame
+          <span class="label-tag">required</span>
+        </label>
+        <div id="startZone" class="upload-zone" onclick="triggerUpload('start')">
+          <input type="file" id="startInput"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+            style="display:none" onchange="onFileSelect(event,'start')">
+          <div id="startIdle" class="upload-idle">
+            <div class="upload-icon">⬡</div>
+            <div class="upload-text">
+              Drop image or
+              <button class="link-btn" onclick="event.stopPropagation(); triggerUpload('start')">browse</button>
+            </div>
+            <div class="upload-sub">JPG · PNG · WebP · GIF · AVIF</div>
+          </div>
+          <div id="startPreview" class="upload-preview-wrap">
+            <img id="startThumb" class="upload-thumb" src="" alt="Start frame">
+            <div class="upload-info">
+              <div id="startFname" class="upload-fname"></div>
+              <div id="startFsize" class="upload-fsize"></div>
+            </div>
+            <button class="upload-replace" onclick="event.stopPropagation(); triggerUpload('start')">Replace</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- End Image (optional) -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">
+          End Frame
+          <span class="label-tag">optional</span>
+        </label>
+        <div id="endZone" class="upload-zone optional" onclick="triggerUpload('end')">
+          <input type="file" id="endInput"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+            style="display:none" onchange="onFileSelect(event,'end')">
+          <div id="endIdle" class="upload-idle">
+            <div class="upload-icon" style="font-size:17px;color:var(--text-4)">⬡</div>
+            <div class="upload-text" style="color:var(--text-3)">
+              Add end frame or
+              <button class="link-btn" onclick="event.stopPropagation(); triggerUpload('end')">browse</button>
+            </div>
+            <div class="upload-sub">Guides the final composition</div>
+          </div>
+          <div id="endPreview" class="upload-preview-wrap">
+            <img id="endThumb" class="upload-thumb" src="" alt="End frame">
+            <div class="upload-info">
+              <div id="endFname" class="upload-fname"></div>
+              <div id="endFsize" class="upload-fsize"></div>
+            </div>
+            <button class="upload-replace" onclick="event.stopPropagation(); triggerUpload('end')">Replace</button>
+          </div>
+        </div>
+        <button id="clearEndBtn" class="ghost-btn" style="display:none;align-self:flex-start" onclick="clearEndImage()">✕ Remove end frame</button>
+      </div>
+
+      <div class="rule"></div>
+
+      <!-- Aspect Ratio -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Aspect Ratio</label>
+        <div class="aspect-grid">
+          <button class="aspect-btn active" data-ratio="16:9" onclick="setAspect('16:9', this)">
+            <div class="asp-box" style="width:36px;height:20px"></div>
+            <span>16:9</span>
+          </button>
+          <button class="aspect-btn" data-ratio="9:16" onclick="setAspect('9:16', this)">
+            <div class="asp-box" style="width:20px;height:36px"></div>
+            <span>9:16</span>
+          </button>
+          <button class="aspect-btn" data-ratio="1:1" onclick="setAspect('1:1', this)">
+            <div class="asp-box" style="width:26px;height:26px"></div>
+            <span>1:1</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Duration -->
+      <div class="ctrl-group">
+        <label class="ctrl-label">Duration</label>
+        <div class="duration-row">
+          <input type="number" id="duration" class="duration-input"
+            value="12" min="5" max="10" step="1">
+          <span class="duration-unit">seconds</span>
+        </div>
+      </div>
+
+      <!-- Generate Audio -->
+      <div class="ctrl-group">
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <div class="toggle-label">Generate Audio</div>
+            <div class="toggle-desc">AI-generated ambient sound</div>
+          </div>
+          <button id="audioToggle" class="toggle on" onclick="toggleAudio()" aria-label="Toggle audio generation"></button>
+        </div>
+      </div>
+
+      <div class="rule"></div>
+
+      <!-- Advanced Settings -->
+      <details class="advanced-details ctrl-group">
+        <summary class="advanced-summary">
+          <span>Advanced Settings</span>
+          <span class="advanced-chevron">⌄</span>
+        </summary>
+        <div class="advanced-body">
+
+          <!-- Negative Prompt -->
+          <div class="ctrl-group">
+            <label class="ctrl-label">Negative Prompt</label>
+            <textarea id="negativePrompt" class="neg-prompt-input"
+              placeholder="What to avoid…">blur, distort, and low quality</textarea>
+          </div>
+
+          <!-- CFG Scale -->
+          <div class="ctrl-group">
+            <label class="ctrl-label">
+              CFG Scale
+              <span class="label-tag">prompt adherence</span>
+            </label>
+            <div class="slider-row">
+              <input type="range" id="cfgSlider" class="slider"
+                min="0" max="1" step="0.01" value="0.5"
+                oninput="updateCfg(this.value)">
+              <span id="cfgVal" class="slider-val">0.5</span>
+            </div>
+            <div class="slider-ends">
+              <span>Creative</span>
+              <span>Strict</span>
+            </div>
+          </div>
+
+        </div>
+      </details>
+
+      <!-- Generate Button -->
+      <button id="generateBtn" class="generate-btn" onclick="generate()">
+        <span id="generateLabel">Render Scene</span>
+        <span class="generate-icon">→</span>
+      </button>
+
+    </aside>
+
+    <!-- ── GALLERY PANEL ──────────────────────────── -->
+    <main class="gallery-panel">
+
+      <!-- Tabs -->
+      <div class="panel-tabs">
+        <button class="panel-tab active" id="tabGenerate" onclick="switchTab('generate')">Generate</button>
+        <button class="panel-tab" id="tabLibrary" onclick="switchTab('library')">
+          Library <span id="libCount" class="lib-count" style="display:none"></span>
+        </button>
+      </div>
+
+      <!-- Generate view -->
+      <div id="generateView">
+        <div id="statusBar" class="status-bar" style="display:none"></div>
+        <div id="gallery" class="gallery">
+          <div class="empty-state">
+            <div class="empty-glyph">◈</div>
+            <div class="empty-title">Your videos will appear here</div>
+            <div class="empty-sub">Upload a start frame, enter a prompt, and press Render Scene</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Library view -->
+      <div id="libraryView" style="display:none">
+        <div id="libraryGrid" class="library-grid"></div>
+      </div>
+
+    </main>
+
+  </div><!-- /workspace -->
+
+  <!-- Video Modal -->
+  <div id="videoModal" class="video-modal" onclick="closeModal(event)">
+    <div class="vm-inner">
+      <video id="modalVideo" controls playsinline></video>
+      <div class="vm-bar">
+        <div class="vm-bar-left">
+          <span id="vmMeta" class="vm-meta"></span>
+          <span id="vmBadge" class="vm-badge"></span>
+        </div>
+        <div class="vm-actions">
+          <button class="vm-btn" id="vmDl" onclick="event.stopPropagation()">↓ Download</button>
+          <button class="vm-btn vm-close" onclick="closeModal(event)">✕ Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

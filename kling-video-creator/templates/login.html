@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kling Video Creator — Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+
+    .login-card {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      padding: 48px 52px;
+      width: 400px;
+      box-shadow: 0 12px 60px rgba(176,137,40,0.12), 0 2px 8px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      animation: revealUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: 0.1s;
+    }
+
+    .login-brand {
+      font-family: var(--font-brand);
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      background: var(--gold-foil);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .login-sub {
+      font-size: 11.5px;
+      color: var(--text-3);
+      letter-spacing: 0.06em;
+      text-align: center;
+      margin-top: 5px;
+      text-transform: uppercase;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .login-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border-mid);
+      border-radius: var(--radius);
+      padding: 13px 16px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      color: var(--text-1);
+      text-align: center;
+      letter-spacing: 0.18em;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .login-input::placeholder {
+      color: var(--text-4);
+      letter-spacing: 0.04em;
+      font-size: 13px;
+    }
+    .login-input:focus {
+      outline: none;
+      border-color: var(--gold-3);
+      box-shadow: 0 0 0 3px rgba(207,168,64,0.10);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--gold-btn);
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      box-shadow: var(--gold-glow);
+      transition: box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%);
+      transform: translateX(-100%);
+    }
+    .login-btn:hover::before { animation: sweep 0.5s ease forwards; }
+    .login-btn:hover { box-shadow: 0 8px 36px rgba(176,137,40,0.32); }
+
+    @keyframes sweep {
+      to { transform: translateX(100%); }
+    }
+
+    .login-error {
+      font-size: 12px;
+      color: #a03030;
+      text-align: center;
+      background: #fdf2f2;
+      border: 1px solid rgba(180,80,80,0.15);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+    }
+
+    .login-hint {
+      font-size: 10.5px;
+      color: var(--text-4);
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .login-rule {
+      width: 48px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+
+    <div style="text-align:center">
+      <div class="login-brand">Kling Video Creator</div>
+      <div class="login-sub">AI Video Studio</div>
+    </div>
+
+    <div class="login-rule"></div>
+
+    <form class="login-form" method="POST" action="/login">
+      <input
+        type="password"
+        name="pin"
+        class="login-input"
+        placeholder="Enter access PIN"
+        autofocus
+        autocomplete="off"
+      >
+      {% if error %}
+      <div class="login-error">{{ error }}</div>
+      {% endif %}
+      <button type="submit" class="login-btn">Enter Studio →</button>
+    </form>
+
+    <div class="login-hint">Private access · Kling Video Creator</div>
+
+  </div>
+</body>
+</html>

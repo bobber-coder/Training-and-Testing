@@ -9,6 +9,14 @@ records payments, reconciles the bank, and assembles a year-end tax pack — wit
 few manual clicks as possible. The pain it removes: Wave's click-this-click-that
 for every small action.
 
+## Naming
+
+The business is **LXR Productions** (sometimes referred to as "Lionheart"). The
+repo/folder keeps the `lionheart-` name for now to avoid churn, but the
+**displayed business name is a single config value** — `BUSINESS_NAME` in `.env`
+(default `LXR Productions`). Change it there and it flows to invoices/estimates and
+the tax dossier. Renaming the repo later is optional and cosmetic.
+
 ## The stack
 
 | Layer | Choice | Why |
@@ -63,6 +71,10 @@ stable ledger underneath; the brain and its skills evolve on top.
   "mark it paid" (or Stripe webhook) records the payment. One message each.
 - **Bank reconcile:** scheduled `bank-sync` polls Zoho's Plaid feed → surfaces new
   uncategorized transactions to Telegram → you confirm categories in chat.
+- **Pay a crew member:** "paid Marcus $400 for 2 edit days on Nike" → `crew-pay`
+  logs it to the `Crew`/`CrewPayments` tabs (date, hours, rate, how paid), updates
+  his running total, and records any rate change (your growth record). Internal
+  tracking only — cash/e-transfer, no tax slips.
 
 ## Security model (summary)
 

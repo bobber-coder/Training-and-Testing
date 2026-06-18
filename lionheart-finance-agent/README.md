@@ -1,10 +1,11 @@
 # Lionheart Finance Agent
 
-A conversational finance/admin "brain" for **Lionheart Productions** (a small
-Canadian video/photography business). You talk to it (type, paste a screenshot,
-or speak via Superwhisper), and it handles receipts, estimates, invoices,
-payments, bank reconciliation, and year-end taxes — without the click-through
-grind of doing it by hand in Wave.
+A conversational finance/admin "brain" for **LXR Productions** (a small Canadian
+video/photography business; the repo keeps the legacy "Lionheart" name — the shown
+business name is the `BUSINESS_NAME` config value). You talk to it (type, paste a
+screenshot, or speak via Superwhisper), and it handles receipts, estimates,
+invoices, payments, bank reconciliation, **tracking what you pay your crew**, and
+year-end taxes — without the click-through grind of doing it by hand in Wave.
 
 This repo is the **source of truth for the code** (skills, helper scripts, docs).
 The system itself **runs on your Mac**, inside your existing **Hermes Agent**.
@@ -47,7 +48,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full design and the
 
 | Path | What it is |
 |------|------------|
-| `skills/` | Hermes `SKILL.md` files — the actual capabilities |
+| `skills/` | Hermes `SKILL.md` files — receipts, estimates/invoices, payments, bank sync, **crew pay (your guys)**, tax summary + dossier |
 | `scripts/` | Shared Python helpers the skills call (Zoho, Sheets, setup check) |
 | `docs/SETUP.md` | Step-by-step **local Mac** setup (do this on the Mac) |
 | `docs/ARCHITECTURE.md` | The design + decisions |

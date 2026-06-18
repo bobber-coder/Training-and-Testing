@@ -32,7 +32,8 @@ Every expense the agent records is tagged to a T2125 line. Representative mappin
 | Insurance | gear/liability insurance |
 | Office expenses | consumables, small supplies |
 | Supplies | SD cards, gels, gaffer tape, batteries, props |
-| Professional fees | accountant, legal, contractor editors |
+| Professional fees | accountant, legal |
+| Contract labour | what you pay your crew (you track this in the Crew tabs) |
 | Rent | studio/location rental |
 | Telephone & utilities | phone, internet (business-use portion) |
 | Motor vehicle (see worksheet) | mileage to/from shoots, parking, fuel |
@@ -45,6 +46,14 @@ Every expense the agent records is tagged to a T2125 line. Representative mappin
   expense, and tag the asset class.
 - Vehicle + home-office → accumulate the inputs (mileage log, home sq-ft %) so the
   year-end worksheet is ready.
+
+## Crew payments (your guys)
+
+You pay crew (cash / e-transfer) for production and editing. This is tracked
+**internally** in the `Crew` / `CrewPayments` tabs via the `crew-pay` skill — who,
+what, hours, rate, and running totals — purely for your own picture and to watch
+people grow. It's **not** set up as a formal payroll/slip arrangement. If you ever
+decide to formalize it, that's a conversation for the accountant.
 
 ## The "Tax Pack" the agent maintains
 

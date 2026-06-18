@@ -59,3 +59,33 @@ outstanding invoices total, overdue count.
 | net_gst_hst | collected − ITCs |
 | est_income_tax_setaside | suggested reserve |
 | notes | threshold warnings, reminders (Jun 15 / Apr 30) |
+
+## Tab: `Crew`
+Roster of your guys + current rates + growth record. Internal only.
+
+| Column | Notes |
+|--------|-------|
+| name | who |
+| role | editor / production / 1st AC / gaffer / etc. |
+| contact | phone / email (optional) |
+| current_day_rate | CAD |
+| current_hourly_rate | CAD |
+| start_date | first worked with you |
+| rate_history | dated notes of rate changes — the growth record |
+| total_paid | running total you've paid them (your own visibility) |
+| notes | strengths, growth observations |
+
+## Tab: `CrewPayments`
+One row per engagement/payment to a subcontractor.
+
+| Column | Notes |
+|--------|-------|
+| date | yyyy-mm-dd |
+| name | contractor |
+| project | job / client |
+| work_type | editing / production day / etc. |
+| hours | if hourly |
+| rate | applied rate |
+| amount | CAD paid |
+| paid_via | cash / etransfer |
+| status | paid / owed |

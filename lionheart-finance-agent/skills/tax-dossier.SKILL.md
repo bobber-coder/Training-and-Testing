@@ -42,6 +42,7 @@ the fiscal year (or for a clean interim package).
    - the T2125-mapped expense summary table,
    - the GST/HST summary,
    - links to receipt images,
+   - a **crew payments summary** (what you paid each person, from the `Crew` tab),
    - open questions for the accountant.
 5. **Deliver** the link via Telegram with a one-paragraph cover note, and remind:
    Zoho **can't file to the CRA directly** — file via CRA My Business Account or the

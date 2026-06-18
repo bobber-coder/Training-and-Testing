@@ -1,0 +1,29 @@
+# ---- Secrets & credentials: NEVER commit ----
+.env
+.env.*
+!.env.example
+*.secret
+secrets/
+credentials/
+*credentials*.json
+*client_secret*.json
+token*.json
+*.pem
+*.key
+
+# Hermes local state (lives on the Mac, not in the repo)
+.hermes/
+~/.hermes/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.python-version
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.log
